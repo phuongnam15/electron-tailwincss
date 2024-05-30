@@ -4,7 +4,7 @@ const os = require("os");
 const fs = require("fs");
 const resizeImg = require('resize-img');
 
-process.env.NODE_ENV = "production";
+process.env.NODE_ENV = "development";
 let mainWindow;
 
 const isDev = process.env.NODE_ENV !== "production";
@@ -14,11 +14,12 @@ function createWindow() {
     title: "Image Resizer",
     width: 500,
     height: 700,
-    contextIsolation: true,
     webPreferences: {
+      contextIsolation: true, //tách biệt mt của renderer và main hoặc preload, tránh tác động từ renderer đến main hoặc preload
+      nodeIntegration: false, //ngăn hoặc cho phép sử dụng require() của nodejs để tải các module, dù là false thì preload.js vần dùng đc require() do khác biệt với các renderer
       sandbox: false,
       preload: path.join(__dirname, `preload.js`)
-  }
+    }
   });
 
   if(isDev) {
@@ -30,11 +31,11 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-  mainWindow.on("closed", () => {
+  mainWindow.on("closed", () => { //free up memmory when X window
     mainWindow = null;
   });
 
-  app.on("activate", () => {
+  app.on("activate", () => { //event activate window from oping app in dock or taskbar of macOS, make sure that always have a window open
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
